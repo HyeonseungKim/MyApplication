@@ -7,23 +7,23 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.Toast;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
     ArrayList<oneItem> items = new ArrayList();
-    JSONArray JA;
     Call<ResponseBody> ownerRequest;
-    Call<ResponseBody> repoRequest;
+    Call<List<repoInfo>> repoRequest;
     RecyclerView repoRecyclerView;
 
     @Override
@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         }
         String username = uri.split("/")[3];
 
-        Retrofit retrofit = new Retrofit.Builder().baseUrl("https://api.github.com/").build();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl("https://api.github.com/").addConverterFactory(GsonConverterFactory.create()).build();
         getGithubInfo service = retrofit.create(getGithubInfo.class);
 
         ownerRequest = service.showOwner(username);
@@ -71,21 +71,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void doRepoRequest(){
-        repoRequest.enqueue(new Callback<ResponseBody>() {
+        repoRequest.enqueue(new Callback<List<repoInfo>>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+            public void onResponse(Call<List<repoInfo>> call, Response<List<repoInfo>> response) {
                 try {
-                    JA = new JSONArray(response.body().string());
-                    JSONObject JO;
-                    oneItem OI;
-
-                    for (int i = 0; i < JA.length(); i++) {
-                            JO = (JSONObject) JA.get(i);
-                            String repoName = JO.getString("name");
-                            String repoDesc = JO.getString("description");
-                            String starCount = JO.getString("stargazers_count");
-                            OI = new repoInfo(repoName, repoDesc, starCount);
-                            items.add(OI);
+                    List list = response.body();
+                    for (int i = 0; i < list.size(); i++) {
+                            items.add((repoInfo)list.get(i));
                     }
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, "데이터 형식 비정상", Toast.LENGTH_LONG).show();
@@ -101,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            public void onFailure(Call<List<repoInfo>> call, Throwable t) {
                 Toast.makeText(MainActivity.this, "조회 실패", Toast.LENGTH_LONG).show();
             }
         });
