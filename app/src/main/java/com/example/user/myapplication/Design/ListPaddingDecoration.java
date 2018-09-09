@@ -1,4 +1,4 @@
-package com.example.user.myapplication;
+package com.example.user.myapplication.Design;
 
 import android.content.Context;
 import android.graphics.Rect;
@@ -26,7 +26,6 @@ public class ListPaddingDecoration extends RecyclerView.ItemDecoration {
         }
             outRect.top = mPadding;
             outRect.bottom = mPadding;
-
     }
 
 }
